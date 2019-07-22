@@ -3,7 +3,9 @@ package io.uv.moviecatalogservice.conroller;
 import io.uv.moviecatalogservice.models.CatalogItem;
 import io.uv.moviecatalogservice.models.Movie;
 import io.uv.moviecatalogservice.models.UserRating;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,10 +28,14 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping(path = "/catalog")
+@Slf4j
 public class MovieCatalogResource {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private DiscoveryClient discoveryClient;
 
 //    @Autowired
 //    private WebClient.Builder webClientBuilder;
@@ -46,6 +52,8 @@ public class MovieCatalogResource {
 
 //        UserRating ratings = restTemplate.getForObject("http://localhost:9093/ratingData/users/" + userId, UserRating.class);
         UserRating ratings = restTemplate.getForObject("http://RATING-DATA-SERVICE/ratingData/users/" + userId, UserRating.class);
+
+        log.info("Instances RATING-DATA-SERVICE {}", discoveryClient.getInstances("RATING-DATA-SERVICE").size());
 
         ///For each movie ID, call movie info service and get details
         return ratings.getUserRating().stream().parallel().map(rating -> {
